@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Assistant Chatbot</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1507915135761-4d0521da64b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Georgia', serif;
+            color: #2d1b00;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            background: rgba(255, 245, 230, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #8b4513;
+            animation: fadeIn 1s ease-in;
+        }
+        #chat-display {
+            height: 450px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #fffaf0;
+            border-radius: 10px;
+            border: 1px solid #d2b48c;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            animation: slideIn 0.5s ease-out;
+        }
+        .user-message {
+            background-color: #4CAF50;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #d81b60;
+            color: white;
+            margin-right: auto;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #d2b48c;
+            border-radius: 10px;
+            background: #fffaf0;
+            color: #2d1b00;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        #send-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #send-button:hover {
+            transform: scale(1.05);
+            background-color: #45a049;
+        }
+        #clear-button {
+            background-color: #f44336;
+            color: white;
+        }
+        #clear-button:hover {
+            transform: scale(1.05);
+            background-color: #da190b;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1 class="text-2xl font-bold text-center mb-4 text-[#8b4513]">Barista Bot Chat</h1>
+        <div id="chat-display"></div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." class="focus:outline-none focus:ring-2 focus:ring-[#8b4513]">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+            <button id="clear-button" onclick="clearChat()">Clear Chat</button>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display initial greeting on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch('/initial_greeting', { method: 'GET' });
+                const data = await response.json();
+                const chatDisplay = document.getElementById('chat-display');
+                const botMessage = document.createElement('div');
+                botMessage.className = 'message bot-message';
+                botMessage.textContent = `Barista Bot: ${data.response}`;
+                chatDisplay.appendChild(botMessage);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching initial greeting:', error);
+            }
+        };
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+
+            // Display user message
+            const chatDisplay = document.getElementById('chat-display');
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.textContent = `You: ${userInput}`;
+            chatDisplay.appendChild(userMessage);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+            // Clear input
+            document.getElementById('user-input').value = '';
+
+            // Send message to server
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userInput })
+                });
+                const data = await response.json();
+
+                // Display bot response
+                const botMessage = document.createElement('div');
+                botMessage.className = 'message bot-message';
+                botMessage.textContent = `Barista Bot: ${data.response}`;
+                chatDisplay.appendChild(botMessage);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message bot-message';
+                errorMessage.textContent = `Barista Bot: Sorry, an error occurred.`;
+                chatDisplay.appendChild(errorMessage);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+        }
+
+        async function clearChat() {
+            await fetch('/clear', { method: 'POST' });
+            const chatDisplay = document.getElementById('chat-display');
+            chatDisplay.innerHTML = '';
+        }
+
+        // Allow sending message with Enter key
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

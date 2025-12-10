@@ -1,0 +1,151 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #FFF8F0;
+    color: #5C3D2E;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+header {
+    background: #8B4513;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.chat-box {
+    height: 400px;
+    padding: 20px;
+    overflow-y: auto;
+    background: #FFF5E6;
+    border-bottom: 2px solid #D2B48C;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.message.user {
+    background: #FFE4E1;
+    margin-left: auto;
+    text-align: right;
+    border-bottom-right-radius: 2px;
+}
+
+.message.bot {
+    background: #F5F5DC;
+    border-bottom-left-radius: 2px;
+}
+
+.message.error {
+    background: #FFEAEA;
+    color: #D32F2F;
+}
+
+.message.typing {
+    background: transparent;
+    font-style: italic;
+    color: #A0522D;
+}
+
+.input-area {
+    display: flex;
+    padding: 15px;
+    background: #FFF8F0;
+    border-top: 1px solid #D2B48C;
+}
+
+#user-input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #D2B48C;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+    margin-right: 10px;
+}
+
+#user-input:focus {
+    border-color: #8B4513;
+}
+
+#send-btn {
+    padding: 12px 24px;
+    background: #8B4513;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#send-btn:hover {
+    background: #A0522D;
+}
+
+.controls {
+    text-align: center;
+    padding: 10px;
+}
+
+#clear-btn {
+    padding: 8px 20px;
+    background: #D2691E;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#clear-btn:hover {
+    background: #CD853F;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 0.9rem;
+    color: #A0522D;
+    background: #FFF8F0;
+    border-top: 1px solid #F5F5DC;
+}
+
+/* Scrollbar styling */
+.chat-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #FFF5E6;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #D2B48C;
+    border-radius: 4px;
+}

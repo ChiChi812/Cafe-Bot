@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Barista Bot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #FFF8F0;
+            color: #5C3D2E;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        header {
+            background: #8B4513;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .chat-box {
+            height: 400px;
+            padding: 20px;
+            overflow-y: auto;
+            background: #FFF5E6;
+            border-bottom: 2px solid #D2B48C;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        .user {
+            background: #FFE4E1;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot {
+            background: #F5F5DC;
+        }
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background: #FFF8F0;
+            border-top: 1px solid #D2B48C;
+        }
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #D2B48C;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            margin-right: 10px;
+        }
+        #send-btn {
+            padding: 12px 24px;
+            background: #8B4513;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #A0522D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☕ Welcome to The Cozy Cup Café</h1>
+        </header>
+
+        <div id="chat-box" class="chat-box">
+            <!-- Messages will appear here -->
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask me for drink recs, coffee facts, or just say hi! 🧋">
+            <button id="send-btn">➤ Send</button>
+        </div>
+
+        <footer>
+            ✨ Powered by Google Gemini • Crafted with ☕ and code ✨
+        </footer>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Load greeting
+        fetch('/initial_greeting')
+            .then(res => res.json())
+            .then(data => {
+                addMessage('🤖 Barista Bot', data.response, 'bot');
+            });
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const msg = userInput.value.trim();
+            if (!msg) return;
+
+            addMessage('🧑 You', msg, 'user');
+            userInput.value = '';
+
+            const typing = document.createElement('div');
+            typing.className = 'message bot';
+            typing.innerHTML = '<em>☕ Barista Bot is brewing your reply...</em>';
+            chatBox.appendChild(typing);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            })
+            .then(res => res.json())
+            .then(data => {
+                chatBox.removeChild(typing);
+                addMessage('🤖 Barista Bot', data.response, 'bot');
+            })
+            .catch(err => {
+                chatBox.removeChild(typing);
+                addMessage('⚠️ System', 'Failed to get response. Try again!', 'error');
+            });
+        }
+
+        function addMessage(sender, text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `<strong>${sender}:</strong> ${text.replace(/\n/g, '<br>')}`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+from flask import Flask, render_template, request, jsonify
+import requests
+import json
+
+app = Flask(__name__)
+
+# Google Gemini API configuration
+API_KEY = "AIzaSyDfV_jPWJ7vXxQ7HIbsGBA7G4OQVSGl-o8"
+API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+
+# System prompt for cafe-themed assistant
+SYSTEM_PROMPT = (
+    "You are a friendly and helpful cafe assistant named Barista Bot. "
+    "You work at a cozy cafe and can help with menu recommendations, "
+    "order placements, coffee facts, recipes, or general cafe-related questions. "
+    "Keep responses concise, engaging, and cafe-themed."
+)
+
+# Chat history to maintain context (stored in memory for simplicity)
+chat_history = [
+    {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]},
+    {"role": "model", "parts": [{"text": "Understood! I'm Barista Bot, ready to assist."}]}
+]
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_message = request.json.get('message').strip()
+    if not user_message:
+        return jsonify({'response': 'Please enter a message.'})
+
+    # Add user message to chat history
+    chat_history.append({"role": "user", "parts": [{"text": user_message}]})
+
+    # Generate response
+    response = generate_response()
+
+    # Add assistant response to chat history
+    chat_history.append({"role": "model", "parts": [{"text": response}]})
+
+    return jsonify({'response': response})
+
+@app.route('/initial_greeting', methods=['GET'])
+def initial_greeting():
+    # Use the existing chat history to get the initial greeting
+    response = chat_history[1]["parts"][0]["text"]  # "Understood! I'm Barista Bot, ready to assist."
+    return jsonify({'response': response})
+
+def generate_response():
+    headers = {
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "contents": chat_history,
+        "generationConfig": {
+            "temperature": 0.7,
+            "topP": 0.9,
+            "maxOutputTokens": 150
+        }
+    }
+
+    try:
+        response = requests.post(f"{API_URL}?key={API_KEY}", headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        return result["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except requests.exceptions.RequestException as e:
+        return f"Sorry, there was an error: {str(e)}"
+
+@app.route('/clear', methods=['POST'])
+def clear_chat():
+    global chat_history
+    chat_history = [
+        {"role": "user", "parts": [{"text": SYSTEM_PROMPT}]},
+        {"role": "model", "parts": [{"text": "Understood! I'm Barista Bot, ready to assist."}]}
+    ]
+    return jsonify({'status': 'Chat cleared'})
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
